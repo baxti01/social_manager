@@ -12,8 +12,6 @@ class PostService:
             self,
             validated_data: dict,
             user_id,
-            output_serializer,
-            context
     ):
         chats = validated_data.get('chats', [])
         validated_data['message_ids'] = []
@@ -39,10 +37,7 @@ class PostService:
 
         post = self._save_in_db(validated_data=validated_data, user_id=user_id)
 
-        if context:
-            context['request'].method = 'GET'
-
-        return output_serializer(instance=post, context=context).data
+        return post
 
     def edit_post(self, validated_data, messages):
         for message in messages:

@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core import exceptions as django_exceptions
-from django.db import transaction, IntegrityError
+from django.db import IntegrityError
 from rest_framework import serializers
 
 User = get_user_model()
