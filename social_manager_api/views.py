@@ -1,6 +1,5 @@
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
-from rest_framework.exceptions import APIException
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
 from rest_framework.viewsets import GenericViewSet
@@ -14,6 +13,9 @@ from social_manager_api.services import PostService
 class AccountViewSet(viewsets.ModelViewSet):
     queryset = Account.objects.all()
     serializer_class = AccountSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(user_id=self.request.user.pk)
 
     def get_queryset(self):
         return Account.objects.filter(user_id=self.request.user.pk)

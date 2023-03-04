@@ -1,6 +1,5 @@
 import asyncio
 
-from pyrogram.types import InputMediaPhoto
 from rest_framework.exceptions import APIException
 
 from social_manager_api.messagers_apis.Telegram import TelegramAPI
@@ -15,24 +14,34 @@ class PostService:
     ):
         chats = validated_data.get('chats', [])
         validated_data['message_ids'] = []
+        validated_data['accounts'] = []
+
         for chat in chats:
-            if chat.account_type == AccountType.TELEGRAM:
+            if chat.account.type == AccountType.TELEGRAM:
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
+
                 data = validated_data.copy()
                 data['chat_id'] = chat.chat_id
+
+                string_session = chat.account.token
+
                 try:
-                    message_id = loop.run_until_complete(TelegramAPI('social_manager').send_message(data))
+                    message_id = loop.run_until_complete(
+                        TelegramAPI('social_manager', session_string=string_session).send_message(data)
+                    )
                     message = Message.objects.create(
                         message_id=message_id,
-                        account_type=AccountType.TELEGRAM,
+                        account=chat.account,
                         chat_id=chat.id,
                         user_id=user_id
                     )
                     validated_data['message_ids'] += [message]
+                    validated_data['accounts'] += [chat.account]
                 except Exception as e:
                     raise APIException(e.args)
-            if chat.account_type == AccountType.INSTAGRAM:
+
+            if chat.account.type == AccountType.INSTAGRAM:
                 pass
 
         post = self._save_in_db(validated_data=validated_data, user_id=user_id)

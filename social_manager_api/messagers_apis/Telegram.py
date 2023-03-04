@@ -23,6 +23,9 @@ class TelegramAPI:
                 if str(dialog.chat.title or dialog.chat.first_name).lower() == chat_name.lower():
                     return str(dialog.chat)
 
+    async def asd(self):
+        pass
+
     async def find_chat_by_id(self, chat_id: Union[int, str]) -> str:
         app = Client(self.name, self.api_id, self.api_hash)
         async with app:

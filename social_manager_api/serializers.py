@@ -6,16 +6,28 @@ from social_manager_api.models import Account, Post, Chat, Message
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
-        fields = ['id', 'type', 'token', 'user']
+        fields = ['id', 'name', 'type', 'token', 'user']
+        read_only_fields = ['user']
+        extra_kwargs = {'token': {'write_only': True}}
 
 
 class ChatSerializer(serializers.ModelSerializer):
+    account_type = serializers.SerializerMethodField()
+
+    def get_account_type(self, obj):
+        return obj.account.type
+
     class Meta:
         model = Chat
         fields = ['id', 'chat_id', 'account_type', 'user']
 
 
 class MessageSerializer(serializers.ModelSerializer):
+    account_type = serializers.SerializerMethodField()
+
+    def get_account_type(self, obj):
+        return obj.account.type
+
     class Meta:
         model = Message
         fields = ['id', 'message_id', 'account_type', 'chat', 'user']
@@ -37,13 +49,6 @@ class PostSerializer(serializers.ModelSerializer):
             fields['message_ids'] = MessageSerializer(instance=message_ids, many=True)
 
             return fields
-
-        fields['accounts'] = serializers.PrimaryKeyRelatedField(
-            queryset=accounts,
-            many=True,
-            required=True,
-            allow_null=False
-        )
 
         fields['chats'] = serializers.PrimaryKeyRelatedField(
             queryset=chats,
@@ -72,4 +77,4 @@ class PostSerializer(serializers.ModelSerializer):
             'chats',
             'message_ids',
         ]
-        read_only_fields = ['user', 'message_ids']
+        read_only_fields = ['user', 'message_ids', 'accounts']
