@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env()
 env.read_env(env_file=os.path.join(BASE_DIR, ".env"))
 
-SECRET_KEY = env("SECRET_KEY")
+SECRET_KEY = env('SECRET_KEY')
 
 DEBUG = True
 
@@ -38,15 +38,27 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    # rest-framework
+    # added apps
+    'social_django',
     'rest_framework',
     'rest_framework_simplejwt',
-    # 'djoser',
+    'sslserver',  # dev
 
     # My apps
     "api_auth.apps.ApiAuthConfig",
     "social_manager_api.apps.SocialManagerApiConfig",
-    "user.apps.UserConfig"
+    "user.apps.UserConfig",
+]
+
+SITE_PROTOCOL = 'https'
+API_VERSION = '16.0'
+SOCIAL_AUTH_FACEBOOK_KEY = env('SOCIAL_AUTH_FACEBOOK_KEY')
+SOCIAL_AUTH_FACEBOOK_SECRET = env('SOCIAL_AUTH_FACEBOOK_SECRET')
+SOCIAL_AUTH_FACEBOOK_SCOPE = ['public_profile', 'email', 'instagram_basic', 'pages_show_list']
+
+AUTHENTICATION_BACKENDS = [
+    'social_core.backends.facebook.FacebookOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
 ]
 
 REST_FRAMEWORK = {

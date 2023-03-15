@@ -8,3 +8,9 @@ class MessageTypeError(APIException):
                       'If you want to send a message using a media file, '
                       'first delete the text message and create a new message with the media file.')
     default_code = 'invalid'
+
+
+class UniqueError(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'There is already such a record in the database'
+    default_code = 'invalid'

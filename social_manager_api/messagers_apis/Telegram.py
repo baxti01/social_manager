@@ -8,13 +8,13 @@ from social_manager import settings
 
 
 class TelegramAPI:
-    def __init__(self, name, api_id=None, api_hash=None, session_string=None):
+    def __init__(self, name, session_string, api_id=None, api_hash=None):
         self.name = name
         self.api_id = api_id
         self.api_hash = api_hash
         # dev line
-        self.session_string = session_string if session_string else settings.env('SESSION_STRING')
-        # self.session_string = session_string
+        # self.session_string = session_string if session_string else settings.env('SESSION_STRING')
+        self.session_string = session_string
         self.app = Client(self.name, self.api_id, self.api_hash, session_string=self.session_string)
 
     async def find_chat_by_name(self, chat_name: str) -> str:
@@ -22,9 +22,6 @@ class TelegramAPI:
             async for dialog in self.app.get_dialogs():
                 if str(dialog.chat.title or dialog.chat.first_name).lower() == chat_name.lower():
                     return str(dialog.chat)
-
-    async def asd(self):
-        pass
 
     async def find_chat_by_id(self, chat_id: Union[int, str]) -> str:
         app = Client(self.name, self.api_id, self.api_hash)
@@ -40,18 +37,6 @@ class TelegramAPI:
                 message = await self.app.send_video(**formatted_data)
             else:
                 message = await self.app.send_message(**formatted_data)
-            return str(message.id)
-
-    async def send_photo(self, data: dict) -> str:
-        formatted_data = self._format_data(data)
-        async with self.app:
-            message = await self.app.send_photo(**formatted_data)
-            return str(message.id)
-
-    async def send_video(self, data) -> str:
-        formatted_data = self._format_data(data)
-        async with self.app:
-            message = await self.app.send_video(**formatted_data)
             return str(message.id)
 
     async def edit_message(self, validate_data) -> str:

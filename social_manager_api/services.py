@@ -24,11 +24,11 @@ class PostService:
                 data = validated_data.copy()
                 data['chat_id'] = chat.chat_id
 
-                string_session = chat.account.token
+                session_string = chat.account.token
 
                 try:
                     message_id = loop.run_until_complete(
-                        TelegramAPI('social_manager', session_string=string_session).send_message(data)
+                        TelegramAPI(name='social_manager', session_string=session_string).send_message(data)
                     )
                     message = Message.objects.create(
                         message_id=message_id,
@@ -54,9 +54,12 @@ class PostService:
                 data = validated_data.copy()
                 data['chat_id'] = message.chat.chat_id
                 data['message_id'] = message.message_id
+
+                session_string = message.account.token
+
                 try:
                     self._get_loop().run_until_complete(
-                        TelegramAPI('social_manager').edit_message(
+                        TelegramAPI(name='social_manager', session_string=session_string).edit_message(
                             data
                         )
                     )
@@ -69,16 +72,15 @@ class PostService:
     ):
         for message in messages:
             if message.account_type == AccountType.TELEGRAM:
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
+                session_string = message.account.token
+
                 try:
-                    message_id = loop.run_until_complete(
-                        TelegramAPI('social_manager').delete_message(
+                    self._get_loop().run_until_complete(
+                        TelegramAPI(name='social_manager', session_string=session_string).delete_message(
                             chat_id=message.chat.chat_id,
                             message_ids=int(message.message_id)
                         )
                     )
-                    print(message_id)
                 except Exception as e:
                     raise APIException(e.args)
             if message.account_type == AccountType.INSTAGRAM:
