@@ -2,31 +2,74 @@ from typing import Union, Iterable
 
 from django.core.files.uploadedfile import InMemoryUploadedFile, TemporaryUploadedFile
 from pyrogram import Client, enums
-from pyrogram.types import InputMediaPhoto, InputMediaVideo
+from pyrogram.types import InputMediaPhoto, InputMediaVideo, Chat
 
-from social_manager import settings
+from social_manager_api.exceptions import TokenError
 
 
 class TelegramAPI:
-    def __init__(self, name, session_string, api_id=None, api_hash=None):
+    def __init__(
+            self,
+            session_string,
+            new_session_string: bool = False,
+            name='social_manager',
+            api_id=None,
+            api_hash=None
+    ):
         self.name = name
         self.api_id = api_id
         self.api_hash = api_hash
-        # dev line
-        # self.session_string = session_string if session_string else settings.env('SESSION_STRING')
-        self.session_string = session_string
-        self.app = Client(self.name, self.api_id, self.api_hash, session_string=self.session_string)
 
-    async def find_chat_by_name(self, chat_name: str) -> str:
+        self.app, self.session_string = self.check_session_string(
+            session_string,
+            new_session_string
+        )
+
+    def check_session_string(
+            self,
+            session_string: str,
+            new_session_string: bool = False
+    ) -> tuple[Client, str]:
+        app = Client(
+            name=self.name,
+            api_id=self.api_id,
+            api_hash=self.api_hash,
+            session_string=session_string
+        )
+
+        if new_session_string:
+            try:
+                with app:
+                    app.get_me()
+            except Exception:
+                raise TokenError()
+
+        return app, session_string
+
+    async def find_chat_by_name_in_my_chats(self, chat_name: str) -> str:
         async with self.app:
             async for dialog in self.app.get_dialogs():
-                if str(dialog.chat.title or dialog.chat.first_name).lower() == chat_name.lower():
+                if str(dialog.chat.title or dialog.chat.first_name) \
+                        .lower() == chat_name.lower():
                     return str(dialog.chat)
 
-    async def find_chat_by_id(self, chat_id: Union[int, str]) -> str:
-        app = Client(self.name, self.api_id, self.api_hash)
-        async with app:
-            return str(await app.get_chat(chat_id))
+    async def find_chat_by_id(self, chat_id: Union[int, str]) -> Chat:
+        async with self.app:
+            return await self.app.get_chat(chat_id)
+
+    async def get_chat_info(
+            self,
+            chat_id: Union[int, str] = 'me'
+    ) -> tuple[int, Union[str, None], str]:
+        chat: Chat = await self.find_chat_by_id(chat_id=chat_id)
+
+        name_list = [chat.first_name, chat.last_name, chat.title]
+
+        chat_id = chat.id
+        name = ' '.join(filter(None, name_list))
+        username = chat.username
+
+        return chat_id, name, username
 
     async def send_message(self, data: dict) -> str:
         formatted_data = self._format_data(data)
@@ -65,7 +108,7 @@ class TelegramAPI:
         async with self.app:
             return str(await self.app.delete_messages(chat_id, message_ids=message_ids))
 
-    def _format_data(self, data: dict):
+    def _format_data(self, data: dict) -> dict:
         formatted_data = {}
         message = f'{data.pop("title" "")}' \
                   f'\n{data.pop("description" "")}' \
@@ -103,7 +146,7 @@ class TelegramAPI:
 
         return formatted_data
 
-    def _get_parse_mode(self, parse_mode):
+    def _get_parse_mode(self, parse_mode) -> enums.ParseMode:
         if parse_mode == "DEFAULT" or parse_mode is None:
             return enums.ParseMode.DEFAULT
 

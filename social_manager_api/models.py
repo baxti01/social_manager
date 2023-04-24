@@ -26,7 +26,7 @@ class AccountType(models.TextChoices):
 class Account(models.Model):
     name = models.CharField(max_length=40, blank=False)
     type = models.CharField(max_length=20, choices=AccountType.choices, blank=False)
-    token = models.TextField(blank=False, null=False)
+    token = models.TextField(blank=False, null=False, unique=True)
 
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
@@ -71,10 +71,12 @@ class Post(models.Model):
 
 
 class Chat(models.Model):
-    chat_id = models.TextField(blank=False)
+    name = models.CharField(max_length=50, blank=True)
+    username = models.CharField(max_length=60, blank=True, null=True, unique=True)
+    chat_id = models.TextField(blank=False, null=False, unique=True)
 
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    account = models.ForeignKey(Account, related_name='chats', on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{self.chat_id} : {self.account.type}'

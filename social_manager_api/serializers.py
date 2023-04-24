@@ -3,14 +3,6 @@ from rest_framework import serializers
 from social_manager_api.models import Account, Post, Chat, Message
 
 
-class AccountSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Account
-        fields = ['id', 'name', 'type', 'token', 'user']
-        read_only_fields = ['user']
-        extra_kwargs = {'token': {'write_only': True}}
-
-
 class ChatSerializer(serializers.ModelSerializer):
     account_type = serializers.SerializerMethodField()
 
@@ -19,7 +11,14 @@ class ChatSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Chat
-        fields = ['id', 'chat_id', 'account_type', 'user']
+        fields = [
+            'id',
+            'chat_id',
+            'name',
+            'username',
+            'account_type',
+            'user'
+        ]
 
 
 class MessageSerializer(serializers.ModelSerializer):
@@ -33,6 +32,23 @@ class MessageSerializer(serializers.ModelSerializer):
         fields = ['id', 'message_id', 'account_type', 'chat', 'user']
 
 
+class AccountSerializer(serializers.ModelSerializer):
+    def get_fields(self):
+        fields = super().get_fields()
+        user = self.context['request'].user
+
+        if self.context.get('chats', True):
+            self.Meta.fields.append('chats')
+            chats = Chat.objects.filter(user=user)
+            fields['chats'] = ChatSerializer(chats, many=True, context=self.context)
+        return fields
+    class Meta:
+        model = Account
+        fields = ['id', 'name', 'type', 'token', 'user']
+        read_only_fields = ['user', 'chats']
+        extra_kwargs = {'token': {'write_only': True}}
+
+
 class PostSerializer(serializers.ModelSerializer):
     def get_fields(self):
         fields = super().get_fields()
@@ -44,9 +60,21 @@ class PostSerializer(serializers.ModelSerializer):
         message_ids = Message.objects.filter(user_id=user.pk)
 
         if request.method == 'GET':
-            fields['accounts'] = AccountSerializer(instance=accounts, many=True)
-            fields['chats'] = ChatSerializer(instance=chats, many=True)
-            fields['message_ids'] = MessageSerializer(instance=message_ids, many=True)
+            self.context.update({'chats': False})
+            fields['accounts'] = AccountSerializer(
+                instance=accounts,
+                many=True,
+                context=self.context
+            )
+            fields['chats'] = ChatSerializer(
+                instance=chats,
+                many=True,
+                context=self.context
+            )
+            fields['message_ids'] = MessageSerializer(
+                instance=message_ids,
+                many=True, context=self.context
+            )
 
             return fields
 
