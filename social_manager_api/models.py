@@ -26,12 +26,10 @@ class AccountType(models.TextChoices):
 class Account(models.Model):
     name = models.CharField(max_length=40, blank=False)
     type = models.CharField(max_length=20, choices=AccountType.choices, blank=False)
-    token = models.TextField(blank=False, null=False, unique=True)
+    token = models.TextField(blank=False, null=False)
 
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
-    class Meta:
-        unique_together = ['name', 'user']
 
     def __str__(self):
         return f'{self.name} {self.type}'
@@ -47,7 +45,12 @@ class Post(models.Model):
     title = models.CharField(max_length=255, blank=True)
     description = models.TextField(blank=True)
     hash_tag = models.TextField(blank=True)
-    photo = models.ImageField(upload_to=get_upload_path, blank=True, null=True)
+    photo = models.ImageField(
+        upload_to=get_upload_path,
+        blank=True,
+        null=True,
+        validators=[FileExtensionValidator(allowed_extensions=['jpg'])]
+    )
     video = models.FileField(
         upload_to=get_upload_path,
         blank=True,
@@ -57,8 +60,9 @@ class Post(models.Model):
     parse_mode = models.CharField(
         max_length=20,
         choices=ParseModeChoices.choices,
-        blank=True,
-        default=None
+        blank=False,
+        null=False,
+        default=ParseModeChoices.DEFAULT
     )
 
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
@@ -72,14 +76,14 @@ class Post(models.Model):
 
 class Chat(models.Model):
     name = models.CharField(max_length=50, blank=True)
-    username = models.CharField(max_length=60, blank=True, null=True, unique=True)
-    chat_id = models.TextField(blank=False, null=False, unique=True)
+    username = models.CharField(max_length=60, blank=True, null=True)
+    chat_id = models.CharField(max_length=255, unique=True)
 
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     account = models.ForeignKey(Account, related_name='chats', on_delete=models.CASCADE)
 
     def __str__(self):
-        return f'{self.chat_id} : {self.account.type}'
+        return f'{self.name}: {self.account.type}'
 
 
 class Message(models.Model):
@@ -90,4 +94,4 @@ class Message(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f'{self.message_id} : {self.account.type}'
+        return f'{self.message_id}: {self.account.type}'

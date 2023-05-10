@@ -1,5 +1,4 @@
 from django.apps import AppConfig
-from django.db.models.signals import post_delete
 
 
 class SocialManagerApiConfig(AppConfig):
@@ -7,5 +6,4 @@ class SocialManagerApiConfig(AppConfig):
     name = 'social_manager_api'
 
     def ready(self):
-        from social_manager_api import signals
-        post_delete.connect(signals.delete_files)
+        import social_manager_api.signals

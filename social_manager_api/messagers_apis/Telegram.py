@@ -1,10 +1,11 @@
+import asyncio
+from pathlib import Path
 from typing import Union, Iterable
 
-from django.core.files.uploadedfile import InMemoryUploadedFile, TemporaryUploadedFile
 from pyrogram import Client, enums
-from pyrogram.types import InputMediaPhoto, InputMediaVideo, Chat
+from pyrogram.types import Chat
 
-from social_manager_api.exceptions import TokenError
+from social_manager_api.exceptions import TokenError, ChatIdError
 
 
 class TelegramAPI:
@@ -55,7 +56,10 @@ class TelegramAPI:
 
     async def find_chat_by_id(self, chat_id: Union[int, str]) -> Chat:
         async with self.app:
-            return await self.app.get_chat(chat_id)
+            try:
+                return await self.app.get_chat(chat_id)
+            except Exception:
+                raise ChatIdError()
 
     async def get_chat_info(
             self,
@@ -71,32 +75,83 @@ class TelegramAPI:
 
         return chat_id, name, username
 
-    async def send_message(self, data: dict) -> str:
-        formatted_data = self._format_data(data)
+    async def get_admin_chats_info(self) -> dict:
         async with self.app:
-            if formatted_data.get('photo', None):
-                message = await self.app.send_photo(**formatted_data)
-            elif formatted_data.get('video', None):
-                message = await self.app.send_video(**formatted_data)
+            dialogs = self.app.get_dialogs()
+            me = await self.app.get_me()
+            # If a channel is pinned, it appears twice in the dialogs.
+            # Therefore, we save the channels in which there were already
+            result = {}
+            async for dialog in dialogs:
+                if dialog.chat.type == enums.ChatType.CHANNEL:
+                    member = await self.app.get_chat_member(dialog.chat.id, me.id)
+                    status = member.status in [
+                        enums.ChatMemberStatus.ADMINISTRATOR,
+                        enums.ChatMemberStatus.OWNER
+                    ]
+                    permissions = False
+                    if status:
+                        permissions = (
+                                member.privileges.can_post_messages and
+                                member.privileges.can_edit_messages and
+                                member.privileges.can_delete_messages
+                        )
+
+                    if status and permissions and not result.get(f"{dialog.chat.id}"):
+                        data = {
+                            "chat_id": dialog.chat.id,
+                            "name": dialog.chat.title,
+                            "username": dialog.chat.username
+
+                        }
+
+                        # save the channel in which we have already been
+                        result[f"{dialog.chat.id}"] = data
+
+            return result
+
+    async def send_message(
+            self,
+            chat_id: Union[int, str],
+            path: Union[str, Path],
+            caption: str = "",
+            parse_mode: str = "DEFAULT",
+            video=None
+    ) -> str:
+        async with self.app:
+            mode = self._get_parse_mode(parse_mode)
+
+            if not video:
+                message = await self.app.send_photo(
+                    chat_id=chat_id,
+                    photo=path,
+                    caption=caption,
+                    parse_mode=mode,
+                )
             else:
-                message = await self.app.send_message(**formatted_data)
+                message = await self.app.send_video(
+                    chat_id=chat_id,
+                    video=path,
+                    caption=caption,
+                    parse_mode=mode,
+                )
             return str(message.id)
 
-    async def edit_message(self, validate_data) -> str:
-        formatted_data = self._format_data(validate_data)
+    # The method will be used in the future
+    async def edit_message(
+            self,
+            chat_id: Union[int, str],
+            message_id: int,
+            text: str,
+            parse_mode: str = "DEFAULT",
+    ) -> str:
         async with self.app:
-            parse_mode = formatted_data.pop('parse_mode', None)
-            caption = formatted_data.pop('caption', None)
-
-            if formatted_data.get('photo', None):
-                media = InputMediaPhoto(media=formatted_data.pop('photo'), caption=caption, parse_mode=parse_mode)
-                message = await self.app.edit_message_media(**formatted_data, media=media)
-            elif formatted_data.get('video', None):
-                media = InputMediaVideo(formatted_data.pop('video'), caption=caption, parse_mode=parse_mode)
-                message = await self.app.edit_message_media(**formatted_data, media=media)
-            else:
-                message = await self.app.edit_message_text(**formatted_data, parse_mode=parse_mode)
-
+            message = await self.app.edit_message_text(
+                chat_id=chat_id,
+                message_id=message_id,
+                text=text,
+                parse_mode=self._get_parse_mode(parse_mode)
+            )
             return str(message.id)
 
     async def delete_message(
@@ -108,43 +163,22 @@ class TelegramAPI:
         async with self.app:
             return str(await self.app.delete_messages(chat_id, message_ids=message_ids))
 
-    def _format_data(self, data: dict) -> dict:
-        formatted_data = {}
-        message = f'{data.pop("title" "")}' \
-                  f'\n{data.pop("description" "")}' \
-                  f'\n{data.pop("hash_tag" "")}'
+    @classmethod
+    def get_tg_client(
+            cls,
+            session_string: str,
+            new_session_string: bool = False,
+    ):
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
 
-        formatted_data['chat_id'] = data.pop('chat_id', "me")
+        tg_client = TelegramAPI(
+            name='social_manager',
+            session_string=session_string,
+            new_session_string=new_session_string
+        )
 
-        message_id = data.pop('message_id', None)
-        if message_id:
-            formatted_data['message_id'] = int(message_id)
-
-        mode = data.pop('parse_mode', None)
-        formatted_data['parse_mode'] = self._get_parse_mode(mode)
-
-        # When sending photo or video message
-        formatted_data['caption'] = message
-
-        photo = data.pop('photo', None)
-        if photo:
-            if isinstance(photo, InMemoryUploadedFile):
-                formatted_data['photo'] = photo.file
-            elif isinstance(photo, TemporaryUploadedFile):
-                formatted_data['photo'] = photo.temporary_file_path()
-
-            return formatted_data
-
-        video = data.pop('video', None)
-        if video:
-            formatted_data['video'] = video.temporary_file_path()
-
-            return formatted_data
-
-        # When sending text message
-        formatted_data['text'] = formatted_data.pop('caption', message)
-
-        return formatted_data
+        return tg_client, loop.run_until_complete
 
     def _get_parse_mode(self, parse_mode) -> enums.ParseMode:
         if parse_mode == "DEFAULT" or parse_mode is None:

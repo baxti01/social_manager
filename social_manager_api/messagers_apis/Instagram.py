@@ -1,12 +1,122 @@
+from pathlib import Path
+
 import requests
+from instagrapi import Client, DEFAULT_LOGGER
 
 from social_manager import settings
-from social_manager_api.exceptions import TokenError
+from social_manager_api.exceptions import TokenError, AccountDataError
+
+
+class InstagramClient(Client):
+
+    def __init__(
+            self,
+            settings: dict = {},
+            proxy: str = None,
+            delay_range: list = None,
+            logger=DEFAULT_LOGGER,
+            **kwargs,
+    ):
+        super().__init__(settings, proxy, delay_range, logger, **kwargs)
+
+        self.verification_code = None
+        self.challenge_code_handler = self.get_code
+        self.change_password_handler = self.change_password
+
+    def get_code(self, username: str, choice=None):
+        if self.verification_code:
+            return int(self.verification_code)
+
+        raise Exception("Verification code needed!")
+
+    def change_password(self, username: str):
+        raise Exception("Many login attempts have been made."
+                        "Please change your account password and "
+                        "try again with new password.")
 
 
 class InstagramAPI:
+
+    def __init__(
+            self,
+            username=None,
+            password=None,
+            session_id=None,
+            verification_code=None
+    ):
+        self.username = username
+        self.password = password
+        self.session_id = session_id
+        self.verification_code = verification_code
+
+        try:
+            if session_id:
+                self.client = self.login_by_session_id(session_id)
+            else:
+                client = InstagramClient()
+                client.verification_code = self.verification_code
+                client.login(self.username, self.password)
+
+                self.session_id = client.sessionid
+                self.client = client
+                self.client.dump_settings(Path(f"media/{self.session_id}.json"))
+        except Exception as e:
+            print(e)
+            raise AccountDataError(detail=e.args)
+
+    def login_by_session_id(self, session_id):
+        client = InstagramClient()
+        try:
+            client.load_settings(Path(f"media/{session_id}.json"))
+        except Exception as e:
+            print(e.args)
+            client.login_by_sessionid(sessionid=session_id)
+            client.dump_settings(Path(f"media/{session_id}.json"))
+            client.get_timeline_feed()
+
+        return client
+
+    def create_post(
+            self,
+            path: Path,  # JPG or MP4 file path
+            caption: str = "",
+            video=None
+    ) -> str:
+        if not video:
+            post = self.client.photo_upload(
+                path=path,
+                caption=caption
+            )
+        else:
+            post = self.client.video_upload(
+                path=path,
+                caption=caption
+            )
+
+        return post.pk
+
+    # The method will be used in the future
+    def edit_post(
+            self,
+            message_id: str,
+            caption: str = "",
+    ) -> dict:
+        return self.client.media_edit(
+            caption=caption,
+            media_id=message_id
+        )
+
+    def delete_post(self, message_id: str) -> bool:
+        return self.client.media_delete(media_id=message_id)
+
+    def get_me(self) -> tuple[str, str, str]:
+        user = self.client.user_info(str(self.client.user_id))
+        return user.pk, user.full_name, user.username
+
+
+class InstagramAPIGraph:
     API_VERSION = 'v16.0'
-    BASE_URL = 'https://graph.facebook.com/'
+    BASE_URL = 'https://graph.facebook.com'
     DEBUG_URL = 'https://graph.facebook.com/debug_token?' \
                 'input_token={input_token}&access_token={access_token}'
 
@@ -22,9 +132,11 @@ class InstagramAPI:
         pass
 
     def edit_message(self):
+        # API GRAPH unsupported this methods
         pass
 
     def delete_message(self):
+        # API GRAPH unsupported this methods
         pass
 
     @classmethod
@@ -60,14 +172,14 @@ class InstagramAPI:
         user_id = data.get('user_id', 'me')
 
         accounts = requests.get(
-            f"https://graph.facebook.com/v16.0/{user_id}/accounts?"
+            f"{cls.BASE_URL}/{cls.API_VERSION}/{user_id}/accounts?"
             f"access_token={token}"
         )
 
         page_id = accounts.json()['data'][0]['id']
 
         ig_accounts = requests.get(
-            f"https://graph.facebook.com/v16.0/{page_id}?"
+            f"{cls.BASE_URL}/{cls.API_VERSION}/{page_id}?"
             "fields=instagram_business_account&"
             f"access_token={token}"
         )
@@ -81,7 +193,7 @@ class InstagramAPI:
         ig_id = cls.get_ig_id(token)
         print(ig_id)
         data = requests.get(
-            f'{cls.BASE_URL}{cls.API_VERSION}/{ig_id}/'
+            f'{cls.BASE_URL}/{cls.API_VERSION}/{ig_id}/'
             f'?fields=name,username&access_token={token}'
         ).json()
 

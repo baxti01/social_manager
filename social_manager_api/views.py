@@ -3,10 +3,9 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from social_manager_api.exceptions import MessageTypeError
-from social_manager_api.models import Account, Post
-from social_manager_api.serializers import AccountSerializer, PostSerializer
-from social_manager_api.services import PostService, AccountService
+from social_manager_api.models import Account, Post, Message, Chat
+from social_manager_api.serializers import AccountSerializer, PostSerializer, ChatSerializer
+from social_manager_api.services import PostService, AccountService, ChatService
 
 
 class AccountViewSet(mixins.CreateModelMixin,
@@ -38,6 +37,30 @@ class AccountViewSet(mixins.CreateModelMixin,
 
     def get_queryset(self):
         return Account.objects.filter(user_id=self.request.user.pk)
+
+
+class ChatViewSet(mixins.RetrieveModelMixin,
+                  mixins.DestroyModelMixin,
+                  mixins.ListModelMixin,
+                  GenericViewSet):
+    queryset = Chat.objects.all()
+    serializer_class = ChatSerializer
+
+    def update(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, *args, **kwargs)
+        serializer.is_valid(raise_exception=True)
+        account = serializer.validated_data['account']
+
+        ChatService().update_chats(
+            session_id=account.token,
+            account_id=account.pk,
+            user_id=account.user_id,
+            account_type=account.type
+        )
+        return Response({"message": "chats successfully updated!"})
+
+    def get_queryset(self):
+        return Chat.objects.filter(user_id=self.request.user.pk)
 
 
 class PostViewSet(viewsets.ModelViewSet):
@@ -77,18 +100,14 @@ class PostViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
 
-        photo = serializer.validated_data.get('photo', None)
-        video = serializer.validated_data.get('video', None)
-
-        if (not instance.photo and not instance.video) and (photo or video):
-            raise MessageTypeError()
-
         PostService().edit_post(
             serializer.validated_data,
             serializer.instance.message_ids.all()
         )
 
         context = self._change_context()
+
+        self.perform_update(serializer)
 
         if getattr(instance, '_prefetched_objects_cache', None):
             # If 'prefetch_related' has been applied to a queryset, we need to
@@ -113,4 +132,6 @@ class PostViewSet(viewsets.ModelViewSet):
     @action(methods=['delete'], detail=False)
     def delete_all(self, request):
         Post.objects.filter(user_id=request.user.pk).delete()
+        messages = Message.objects.filter(user_id=request.user.pk).all()
+        PostService().delete_post(messages)
         return Response(data={"operation": "Delete all records success!"})
