@@ -1,0 +1,51 @@
+:root{
+    --my-border-dark: #383d3f;
+    --my-bg-dark: #181a1b;
+}
+
+body {
+    background-color: var(--my-bg-dark);
+    color: white;
+}
+
+.logo {
+    width: 300px;
+}
+
+.auth a,
+.profile a {
+    text-decoration: none;
+    color: white;
+}
+
+header {
+    padding: 0 10px;
+}
+
+.post_image {
+    max-height: 400px;
+    object-fit: contain;
+}
+
+.my-border {
+    border: var(--my-border-dark) 1px solid;
+}
+
+.my-border-top {
+    border-top: var(--my-border-dark) 1px solid;
+}
+
+.my-border-bottom {
+    border-bottom: var(--my-border-dark) 1px solid;
+}
+
+.full-text{
+    text-align: left;
+}
+
+/*.post_image{*/
+/*    display: block;*/
+/*    max-height:400px;*/
+/*    width: auto;*/
+/*    height: auto;*/
+/*}*/

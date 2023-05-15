@@ -64,6 +64,8 @@ class Post(models.Model):
         null=False,
         default=ParseModeChoices.DEFAULT
     )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     accounts = models.ManyToManyField(Account)

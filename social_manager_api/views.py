@@ -70,7 +70,7 @@ class PostViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return Post.objects.filter(
             user_id=self.request.user.pk,
-        )
+        ).order_by('-updated_at')
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

@@ -1,0 +1,15 @@
+{% extends 'frontend/auth/auth_base.html' %}
+
+{% block form_title %}
+    Вы уже зарегистрированы!
+{% endblock %}
+{% block form_description %}
+    Вернитесь к публикациям.
+{% endblock %}
+{% block form_name %}
+    Форма регистрации.
+{% endblock %}
+{% block form_buttons %}
+    <button type="submit" class="btn btn-primary">Регистрация</button>
+    <a href="{% url 'login' %}" class="badge badge-info">Войти</a>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends 'frontend/base.html' %}
+
+{% block content %}
+    <div class="row justify-content-center">
+        <div class="col-9">
+            {% if posts and not method %}
+                {% for post in posts %}
+                    <div class="card text-center text-bg-dark mb-lg-5">
+                        <div class="card-header">
+                            {{ post.created_at|date:"Y-m-d" }} | {{ post.updated_at }}
+                        </div>
+                        <div class="card-body my-border-top">
+                            {% if post.photo %}
+                                <img src="{{ post.photo }}" class="card-img-top post_image" alt="{{ post.image.name }}">
+                            {% else %}
+                                <video controls class="card-img-top post_video">
+                                    <source src="{{ post.video }}" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                            {% endif %}
+                            <hr>
+                            <div class="full-text">
+                                <p class="card-text">
+                                    {{ post.title }}
+                                    <br>
+                                    {{ post.description }}
+                                    <br>
+                                    {{ post.hash_tag }}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="card-footer text-body-secondary my-border-top">
+                            {% if not is_detail %}
+                                <a href="{% url 'post_detail' pk=post.id method='' %}" class="btn btn-primary">Смотреть
+                                    пост</a>
+                            {% else %}
+                                <a href="{% url 'post_detail' pk=post.id method='update' %}" class="btn btn-warning">Обновить
+                                    пост</a>
+                                <a href="{% url 'post_detail' pk=post.id method='delete' %}" class="btn btn-danger">Удалить пост</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% elif method == 'update' %}
+                <div class="container">
+                    <div class="row justify-content-center">
+                        <div class="col-8">
+                            <h4 class="my-2">
+                                Обновление поста
+                            </h4>
+                            <form method="POST" action="">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    {{ form.as_p }}
+                                </div>
+                                <div class="container-buttons">
+                                    <button type="submit" class="btn btn-primary">Обновить</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <h4>Здесь пока нет постов.</h4>
+            {% endif %}
+        </div>
+        <div class="col-2">
+            <a href="{% url 'post_create' %}" class="btn btn-primary">Создать</a>
+        </div>
+    </div>
+{% endblock %}

@@ -120,6 +120,7 @@ class TelegramAPI:
     ) -> str:
         async with self.app:
             mode = self._get_parse_mode(parse_mode)
+            chat_id = int(chat_id)
 
             if not video:
                 message = await self.app.send_photo(
@@ -147,7 +148,7 @@ class TelegramAPI:
     ) -> str:
         async with self.app:
             message = await self.app.edit_message_text(
-                chat_id=chat_id,
+                chat_id=int(chat_id),
                 message_id=message_id,
                 text=text,
                 parse_mode=self._get_parse_mode(parse_mode)
@@ -161,7 +162,7 @@ class TelegramAPI:
 
     ) -> str:
         async with self.app:
-            return str(await self.app.delete_messages(chat_id, message_ids=message_ids))
+            return str(await self.app.delete_messages(int(chat_id), message_ids=message_ids))
 
     @classmethod
     def get_tg_client(

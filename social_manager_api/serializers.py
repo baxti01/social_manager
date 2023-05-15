@@ -52,13 +52,14 @@ class MessageSerializer(serializers.ModelSerializer):
 
 
 class AccountSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(default=None)
-    password = serializers.CharField(default=None)
+    username = serializers.CharField(default=None, write_only=True)
+    password = serializers.CharField(default=None, write_only=True)
     token = serializers.CharField(
         default=None,
-        style={'base_template': 'textarea.html'}
+        write_only=True,
+        style={'base_template': 'textarea.html'},
     )
-    verification_code = serializers.CharField(default=None)
+    verification_code = serializers.CharField(default=None, write_only=True)
 
     def get_fields(self):
         fields = super().get_fields()
@@ -79,7 +80,6 @@ class AccountSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'username', 'password',
                   'verification_code', 'token', 'type', 'user']
         read_only_fields = ['user', 'name']
-        extra_kwargs = {'token': {'write_only': True}}
 
 
 class PostSerializer(serializers.ModelSerializer):
@@ -118,6 +118,8 @@ class PostSerializer(serializers.ModelSerializer):
 
         if request.method == 'PUT':
             fields['chats'].read_only = True
+            fields['photo'].read_only = True
+            fields['video'].read_only = True
 
         return fields
 
@@ -131,8 +133,16 @@ class PostSerializer(serializers.ModelSerializer):
             'photo',
             'video',
             'parse_mode',
+            'created_at',
+            'updated_at',
             'user',
             'accounts',
             'message_ids',
         ]
-        read_only_fields = ['user', 'message_ids', 'accounts']
+        read_only_fields = [
+            'user',
+            'message_ids',
+            'accounts',
+            'created_at',
+            'updated_at'
+        ]

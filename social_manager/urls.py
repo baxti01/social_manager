@@ -22,6 +22,7 @@ from social_manager import settings
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include("social_manager_api.urls")),
+    path('', include("frontend.urls")),
 ]
 
 if settings.DEBUG:
