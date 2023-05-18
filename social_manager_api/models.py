@@ -27,6 +27,8 @@ class Account(models.Model):
     name = models.CharField(max_length=40, blank=False)
     type = models.CharField(max_length=20, choices=AccountType.choices, blank=False)
     token = models.TextField(blank=False, null=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
@@ -80,6 +82,8 @@ class Chat(models.Model):
     name = models.CharField(max_length=50, blank=True)
     username = models.CharField(max_length=60, blank=True, null=True)
     chat_id = models.CharField(max_length=255, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     account = models.ForeignKey(Account, related_name='chats', on_delete=models.CASCADE)

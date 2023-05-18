@@ -32,9 +32,26 @@
     <div class="row justify-content-center">
         {% if user.is_authenticated %}
             <aside class="col-2 list-group p-0">
-                <a href="{% url 'posts' %}" class="my-border list-group-item text-bg-dark list-group-item-action">Публикации</a>
-                <a href="#" class="my-border list-group-item text-bg-dark list-group-item-action">Аккаунты</a>
-                <a href="#" class="my-border list-group-item text-bg-dark list-group-item-action">Чаты</a>
+                {% if page == 'posts' %}
+                    <a href="{% url 'posts' %}"
+                       class="active my-border list-group-item list-group-item-action">Публикации</a>
+                {% else %}
+                    <a href="{% url 'posts' %}" class="my-border list-group-item text-bg-dark list-group-item-action">Публикации</a>
+                {% endif %}
+
+                {% if page == 'accounts' %}
+                    <a href="{% url 'accounts' %}"
+                       class="active my-border list-group-item list-group-item-action">Аккаунты</a>
+                {% else %}
+                    <a href="{% url 'accounts' %}"
+                       class="my-border list-group-item text-bg-dark list-group-item-action">Аккаунты</a>
+                {% endif %}
+
+                {% if page == 'chats' %}
+                    <a href="{% url 'chats' %}" class="active my-border list-group-item list-group-item-action">Чаты</a>
+                {% else %}
+                    <a href="{% url 'chats' %}" class="my-border list-group-item text-bg-dark list-group-item-action">Чаты</a>
+                {% endif %}
             </aside>
         {% endif %}
         <main class="col-7">
@@ -44,9 +61,11 @@
     </div>
 </div>
 
-<footer class="mt-auto">
-    <h2>FOOTER</h2>
-</footer>
+{#<footer class="mt-auto">#}
+{#    <h2>FOOTER</h2>#}
+{#</footer>#}
+
+<script src="{% static 'frontend/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
 
 </body>
 </html>

@@ -1,4 +1,5 @@
 import time
+from datetime import datetime
 from typing import Union
 
 from django.core.files.uploadedfile import TemporaryUploadedFile
@@ -81,6 +82,14 @@ class AccountService:
                 user_id=user_id
             )
 
+        # for update telegram admins chats
+        if account_type == AccountType.TELEGRAM:
+            ChatService().update_chats(
+                session_id=account.token,
+                account_id=account.pk,
+                user_id=account.user_id,
+            )
+
         return account
 
 
@@ -138,10 +147,11 @@ class ChatService:
                 else:
                     instance.name = data['name']
                     instance.username = data['username']
+                    instance.updated_at = datetime.utcnow()
                     update_instances.append(instance)
 
             Chat.objects.bulk_create(create_instances)
-            Chat.objects.bulk_update(update_instances, ['name', 'username'])
+            Chat.objects.bulk_update(update_instances, ['name', 'username', "updated_at"])
 
     def _update_chats_dict(
             self,

@@ -36,7 +36,9 @@ class AccountViewSet(mixins.CreateModelMixin,
         )
 
     def get_queryset(self):
-        return Account.objects.filter(user_id=self.request.user.pk)
+        return Account.objects.filter(
+            user_id=self.request.user.pk
+        ).order_by('-updated_at')
 
 
 class ChatViewSet(mixins.RetrieveModelMixin,
@@ -60,7 +62,9 @@ class ChatViewSet(mixins.RetrieveModelMixin,
         return Response({"message": "chats successfully updated!"})
 
     def get_queryset(self):
-        return Chat.objects.filter(user_id=self.request.user.pk)
+        return Chat.objects.filter(
+            user_id=self.request.user.pk
+        ).order_by('-updated_at')
 
 
 class PostViewSet(viewsets.ModelViewSet):

@@ -30,13 +30,17 @@ class ChatSerializer(serializers.ModelSerializer):
             'user',
             'account',
             'account_type',
+            'created_at',
+            'updated_at'
         ]
         read_only_fields = [
             'name',
             'chat_id',
             'username',
             'account_type',
-            'user'
+            'user',
+            'created_at',
+            'updated_at'
         ]
 
 
@@ -48,7 +52,13 @@ class MessageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Message
-        fields = ['id', 'message_id', 'account_type', 'chat', 'user']
+        fields = [
+            'id',
+            'message_id',
+            'account_type',
+            'chat',
+            'user'
+        ]
 
 
 class AccountSerializer(serializers.ModelSerializer):
@@ -77,9 +87,24 @@ class AccountSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Account
-        fields = ['id', 'name', 'username', 'password',
-                  'verification_code', 'token', 'type', 'user']
-        read_only_fields = ['user', 'name']
+        fields = [
+            'id',
+            'name',
+            'username',
+            'password',
+            'verification_code',
+            'token',
+            'type',
+            'user',
+            'created_at',
+            'updated_at'
+        ]
+        read_only_fields = [
+            'user',
+            'name',
+            'created_at',
+            'updated_at'
+        ]
 
 
 class PostSerializer(serializers.ModelSerializer):

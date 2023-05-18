@@ -1,0 +1,66 @@
+{% extends 'frontend/base.html' %}
+
+{% block content %}
+    <div class="row justify-content-center">
+        <div class="col-8">
+            {% for chat in chats %}
+                <div class="card text-bg-dark mb-lg-5">
+                    {% if chat.account_type == "Telegram" %}
+                        <div class="card-header bg-primary"> {{ chat.account_type }} </div>
+                    {% elif chat.account_type == "Instagram" %}
+                        <div class="card-header bg-danger"> {{ chat.account_type }} </div>
+                    {% endif %}
+                    <div class="card-body my-border-top p-0">
+                        <div class="card-text m-0">
+                            Название:
+                            <h5>{{ chat.name }}</h5>
+                        </div>
+                        <div class="card-text m-0 my-border-top">
+                            Имя пользователя (username):
+                            <h5>{{ chat.username|default:'Нет' }}</h5>
+                        </div>
+                        <div class="card-text m-0 my-border-top">
+                            Идентификатор:
+                            <h5>{{ chat.chat_id }}</h5>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="col-4">
+            <div class="list-group">
+                <div href="#" class="my-border bg-success list-group-item text-bg-dark">
+                    Обновить чаты
+                </div>
+            </div>
+
+            <div class="list-group mt-lg-2">
+                <div class="my-border bg-primary list-group-item text-bg-dark">
+                    Telegram
+                </div>
+                {% for account in accounts %}
+                    {% if account.type == "Telegram" %}
+                        <a href="{% url 'chat_update' account_pk=account.id %}"
+                           class="my-border list-group-item list-group-item-action text-bg-dark">
+                            {{ account.name }}
+                        </a>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            <div class="list-group mt-lg-2">
+                <div class="my-border bg-danger list-group-item text-bg-dark">
+                    Instagram
+                </div>
+                {% for account in accounts %}
+                    {% if account.type == "Instagram" %}
+                        <a href="{% url 'chat_update' account_pk=account.id %}"
+                           class="my-border list-group-item list-group-item-action text-bg-dark">
+                            {{ account.name }}
+                        </a>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -36,35 +36,23 @@ class UserLoginForm(forms.Form):
 class UserCreateForm(forms.Form):
     email = forms.EmailField(
         label='Введите email',
-        required=False,
         widget=forms.EmailInput(
-            attrs={
-                "class": "form-control",
-                "required": True
-            }
+            attrs={"class": "form-control"}
         )
     )
 
     username = forms.CharField(
         label='Введите username',
-        required=False,
         widget=forms.TextInput(
-            attrs={
-                "class": "form-control",
-                "required": True
-            }
+            attrs={"class": "form-control"}
         )
     )
 
     password = forms.CharField(
         label='Введите пароль',
         validators=[validate_password],
-        required=False,
         widget=forms.PasswordInput(
-            attrs={
-                "class": "form-control",
-                "required": True
-            }
+            attrs={"class": "form-control"}
         )
     )
 
@@ -78,62 +66,32 @@ class UpdatePostForm(forms.Form):
 
     title = forms.CharField(
         label='Заголовок',
-        required=False,
         widget=forms.TextInput(
-            attrs={
-                "class": "form-control",
-                "required": True
-            }
+            attrs={"class": "form-control"}
         )
     )
 
     description = forms.CharField(
         label='Описание',
-        required=False,
         widget=forms.TextInput(
-            attrs={
-                "class": "form-control",
-                "required": True
-            }
+            attrs={"class": "form-control"}
         )
     )
 
     hash_tag = forms.CharField(
         label='Хэш-теги',
-        required=False,
         widget=forms.TextInput(
-            attrs={
-                "class": "form-control",
-                "required": True
-            }
+            attrs={"class": "form-control"}
         )
     )
 
     parse_mode = forms.ChoiceField(
         choices=ParseModeChoices.choices,
         label='Тип текста',
-        required=False,
         widget=forms.Select(
-            attrs={
-                "class": "form-control",
-                "required": True
-            }
+            attrs={"class": "form-control"}
         )
     )
-
-
-# class CreatePostForm(forms.ModelForm):
-#     class Meta:
-#         model = Post
-#         fields = [
-#             'title',
-#             'description',
-#             'hash_tag',
-#             'parse_mode',
-#             'photo',
-#             'video',
-#             'chats'
-#         ]
 
 class CreatePostForm(UpdatePostForm):
     def __init__(self, *args, **kwargs):
@@ -145,9 +103,7 @@ class CreatePostForm(UpdatePostForm):
         label='Фото',
         required=False,
         widget=forms.ClearableFileInput(
-            attrs={
-                "class": "form-control",
-            }
+            attrs={"class": "form-control"}
         )
     )
 
@@ -155,20 +111,14 @@ class CreatePostForm(UpdatePostForm):
         label='Фото',
         required=False,
         widget=forms.ClearableFileInput(
-            attrs={
-                "class": "form-control",
-            }
+            attrs={"class": "form-control"}
         )
     )
 
     chats = forms.MultipleChoiceField(
         label='Чаты',
-        required=False,
         widget=forms.SelectMultiple(
-            attrs={
-                "class": "form-control",
-                "required": True
-            }
+            attrs={"class": "form-control"}
         )
     )
 
@@ -177,3 +127,37 @@ class CreatePostForm(UpdatePostForm):
             raise forms.ValidationError("Укажите поле фото или видео")
 
         return self.cleaned_data
+
+
+class CreateInstagramAccountForm(forms.Form):
+    username = forms.CharField(
+        label="Имя пользователя",
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control",
+            }
+        )
+    )
+    password = forms.CharField(
+        label="Пароль",
+        widget=forms.PasswordInput(
+            attrs={
+                "class": "form-control",
+            }
+        )
+    )
+    verification_code = forms.CharField(
+        label="Код верификации (необязательное поле)",
+        required=False,
+        widget=forms.TextInput(
+            attrs={"class": "form-control"}
+        )
+    )
+
+class CreateTelegramAccountForm(forms.Form):
+    token = forms.CharField(
+        label="Токен пользователя",
+        widget=forms.TextInput(
+            attrs={"class": "form-control"}
+        )
+    )

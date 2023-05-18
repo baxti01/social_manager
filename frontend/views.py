@@ -4,14 +4,15 @@ from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import render, redirect
 
-from frontend.forms import UserLoginForm, UserCreateForm, UpdatePostForm, CreatePostForm
+from frontend.forms import UserLoginForm, UserCreateForm, UpdatePostForm, CreatePostForm, CreateInstagramAccountForm, \
+    CreateTelegramAccountForm
 from frontend.utils import format_chats
 
 API_URL = "http://127.0.0.1:8000/api/"
 
 
 def sign_up(request):
-    form = UserCreateForm(request.POST)
+    form = UserCreateForm(request.POST or None)
 
     if form.is_valid():
         data = form.cleaned_data
@@ -48,23 +49,26 @@ def logout_view(request):
 
 @login_required()
 def posts(request):
-    posts_list = []
+    context = {"posts": [], "page": "posts"}
     response = requests.get(
         url=f"{API_URL}posts/",
         cookies=request.COOKIES
     )
+
     if response.status_code == 200:
-        posts_list = response.json()
-    return render(request, 'frontend/posts/posts.html', {'posts': posts_list})
+        context['posts'] = response.json()
+
+    return render(request, 'frontend/posts/posts.html', context)
 
 
+@login_required()
 def post_detail(request, pk, method):
-    post = []
     post_detail_url = f"{API_URL}posts/{pk}/"
     context = {
-        'posts': post,
+        'posts': [],
         'is_detail': True,
-        'method': method
+        'method': method,
+        'page': 'posts'
     }
     if method == 'update':
         form = UpdatePostForm(request.POST or None)
@@ -99,22 +103,23 @@ def post_detail(request, pk, method):
             cookies=request.COOKIES
         )
         if response.status_code == 200:
-            post.append(response.json())
+            context['posts'].append(response.json())
         elif response.status_code == 404:
             raise Http404()
 
     return render(request, 'frontend/posts/posts.html', context)
 
 
+@login_required()
 def post_create(request):
-    form = None
+    context = {"form": None, "page": "posts"}
     response = requests.get(
         url=f"{API_URL}chats/",
         cookies=request.COOKIES
     )
     if response.status_code == 200:
-        chats = format_chats(response.json())
-        form = CreatePostForm(data=request.POST, files=request.FILES, chats=chats)
+        chats_data = format_chats(response.json())
+        form = CreatePostForm(data=request.POST, files=request.FILES, chats=chats_data)
 
         if form.is_valid():
             data = form.cleaned_data.copy()
@@ -133,9 +138,99 @@ def post_create(request):
                 return redirect('posts')
 
         elif request.method == 'GET':
-            form = CreatePostForm(chats=chats)
+            form = CreatePostForm(chats=chats_data)
 
-    return render(request, 'frontend/posts/create_post.html', {"form": form})
+        context['form'] = form
+
+    return render(request, 'frontend/posts/create_post.html', context)
+
+
+@login_required()
+def accounts(request):
+    context = {"accounts": [], "page": "accounts"}
+    response = requests.get(
+        url=f"{API_URL}accounts/",
+        cookies=request.COOKIES
+    )
+
+    if response.status_code == 200:
+        context['accounts'] = response.json()
+
+    return render(request, 'frontend/accounts/accounts.html', context)
+
+
+@login_required()
+def account_create(request, account_type: str):
+    if account_type == "instagram":
+        form = CreateInstagramAccountForm(request.POST or None)
+    elif account_type == "telegram":
+        form = CreateTelegramAccountForm(request.POST or None)
+    else:
+        form = None
+
+    context = {"form": form}
+    csrf_token = request.COOKIES.get('csrftoken')
+
+    if request.POST and form.is_valid():
+        data = form.cleaned_data
+        data['type'] = account_type.capitalize()
+        response = requests.post(
+            url=f"{API_URL}accounts/",
+            data=data,
+            cookies=request.COOKIES,
+            headers={"X-CSRFToken": csrf_token}
+        )
+        if response.status_code == 201:
+            return redirect('accounts')
+        else:
+            print("create account", response.text)
+    else:
+        pass
+    return render(request, 'frontend/accounts/create_account.html', context)
+
+
+@login_required()
+def account_delete(request, pk):
+    csrf_token = request.COOKIES.get("csrftoken")
+    requests.delete(
+        url=f"{API_URL}accounts/{pk}",
+        cookies=request.COOKIES,
+        headers={"X-CSRFToken": csrf_token}
+    )
+
+    return redirect("accounts")
+
+
+@login_required()
+def chats(request):
+    context = {"page": "chats", "chats": [], "accounts": []}
+
+    response = requests.get(
+        url=f"{API_URL}chats/",
+        cookies=request.COOKIES
+    )
+    accounts_response = requests.get(
+        url=f"{API_URL}accounts/",
+        cookies=request.COOKIES
+    )
+    if response.status_code == 200 and accounts_response.status_code == 200:
+        context['chats'] = response.json()
+        context['accounts'] = accounts_response.json()
+
+    return render(request, 'frontend/chats/chats.html', context)
+
+
+@login_required()
+def chat_update(request, account_pk):
+    csrf_token = request.COOKIES.get("csrftoken")
+    response = requests.put(
+        url=f"{API_URL}chats/",
+        data={"account": account_pk},
+        cookies=request.COOKIES,
+        headers={"X-CSRFToken": csrf_token}
+    )
+
+    return redirect('chats')
 
 
 @login_required

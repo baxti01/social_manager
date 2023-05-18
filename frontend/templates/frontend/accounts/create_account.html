@@ -5,7 +5,7 @@
         <div class="row justify-content-center">
             <div class="col-8">
                 <h4 class="my-2">
-                    Создание поста
+                    Привязка аккаунта
                 </h4>
                 <form method="POST" action="" enctype="multipart/form-data">
                     {% csrf_token %}
@@ -13,7 +13,7 @@
                         {{ form.as_p }}
                     </div>
                     <div class="container-buttons">
-                        <button type="submit" class="btn btn-success">Создать</button>
+                        <button type="submit" class="btn btn-success">Привязать</button>
                     </div>
                 </form>
             </div>

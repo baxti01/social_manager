@@ -1,4 +1,5 @@
 {% extends 'frontend/base.html' %}
+{% load frontend_filters %}
 
 {% block content %}
     <div class="row justify-content-center">
@@ -6,20 +7,25 @@
             {% if posts and not method %}
                 {% for post in posts %}
                     <div class="card text-center text-bg-dark mb-lg-5">
-                        <div class="card-header">
-                            {{ post.created_at|date:"Y-m-d" }} | {{ post.updated_at }}
+                        <div class="card-header p-md-2 ps-1 pe-1 d-flex justify-content-between">
+                            <span>
+                                создано: {{ post.created_at|str_to_datetime|date:"Y-m-d" }}
+                            </span>
+                            |
+                            <span>
+                                обновлено: {{ post.updated_at|str_to_datetime|date:"Y-m-d" }}
+                            </span>
                         </div>
-                        <div class="card-body my-border-top">
+                        <div class="card-body my-border-top p-0">
                             {% if post.photo %}
-                                <img src="{{ post.photo }}" class="card-img-top post_image" alt="{{ post.image.name }}">
+                                <img src="{{ post.photo }}" class="my-card-img post_image" alt="{{ post.image.name }}">
                             {% else %}
-                                <video controls class="card-img-top post_video">
+                                <video controls class="my-card-img post_video">
                                     <source src="{{ post.video }}" type="video/mp4">
                                     Your browser does not support the video tag.
                                 </video>
                             {% endif %}
-                            <hr>
-                            <div class="full-text">
+                            <div class="my-text-left my-border-top p-1">
                                 <p class="card-text">
                                     {{ post.title }}
                                     <br>
@@ -36,7 +42,8 @@
                             {% else %}
                                 <a href="{% url 'post_detail' pk=post.id method='update' %}" class="btn btn-warning">Обновить
                                     пост</a>
-                                <a href="{% url 'post_detail' pk=post.id method='delete' %}" class="btn btn-danger">Удалить пост</a>
+                                <a href="{% url 'post_detail' pk=post.id method='delete' %}" class="btn btn-danger">Удалить
+                                    пост</a>
                             {% endif %}
                         </div>
                     </div>

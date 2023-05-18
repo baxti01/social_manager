@@ -1,10 +1,54 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'frontend/base.html' %}
+{% load static %}
 
-</body>
-</html>
+{% block content %}
+    <div class="row justify-content-center">
+        <div class="col-8">
+            {% for account in accounts %}
+                <div class="card text-bg-dark mb-lg-5">
+                    <div class="card-header">
+                        {{ account.name }}
+                    </div>
+                    <div class="card-body my-border-top p-0">
+                        {% if account.type == 'Telegram' %}
+                            <img src="{% static 'frontend/images/telegram.jpg' %}"
+                                 class="my-card-img post_image my-border-bottom"
+                                 alt="Account Type">
+                        {% elif account.type == 'Instagram' %}
+                            <img src="{% static 'frontend/images/instagram.jpg' %}"
+                                 class="my-card-img post_image my-border-bottom"
+                                 alt="Account Type">
+                        {% endif %}
+                        <span>Чаты</span>
+                        <div class="list-group chats">
+                            {% for chat in account.chats %}
+                                <a href="#"
+                                   class="my-border text-bg-dark list-group-item list-group-item-action">
+                                    {{ chat.name }}
+                                </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="card-footer text-body-secondary my-border-top">
+                        <a href="{% url 'account_delete' pk=account.id %}" class="btn btn-danger">Удалить аккаунт</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="col-3">
+            <div class="list-group">
+                <span class="my-border bg-success text-bg-dark list-group-item">
+                    Добавить
+                </span>
+                <a href="{% url 'account_create' account_type='telegram' %}"
+                   class="account-link my-border text-bg-dark list-group-item list-group-item-action">
+                    Telegram
+                </a>
+                <a href="{% url 'account_create' account_type='instagram' %}"
+                   class="account-link my-border text-bg-dark list-group-item list-group-item-action">
+                    Instagram
+                </a>
+            </div>
+        </div>
+    </div>
+{% endblock %}

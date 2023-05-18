@@ -1,6 +1,7 @@
-:root{
+:root {
     --my-border-dark: #383d3f;
     --my-bg-dark: #181a1b;
+    --my-link-hover: #2d5f86;
 }
 
 body {
@@ -27,6 +28,15 @@ header {
     object-fit: contain;
 }
 
+.chats{
+    width: 80%;
+    margin: 3px auto;
+}
+
+.account-link:hover {
+  background-color: var(--my-link-hover) !important;
+}
+
 .my-border {
     border: var(--my-border-dark) 1px solid;
 }
@@ -39,8 +49,12 @@ header {
     border-bottom: var(--my-border-dark) 1px solid;
 }
 
-.full-text{
+.my-text-left {
     text-align: left;
+}
+
+.my-card-img {
+    width: 100%;
 }
 
 /*.post_image{*/
