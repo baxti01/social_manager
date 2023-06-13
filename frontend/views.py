@@ -37,7 +37,7 @@ def login_view(request):
         user = authenticate(request, email=email, password=password)
         login(request, user)
 
-        return redirect('home')
+        return redirect('posts')
 
     return render(request, 'frontend/auth/login.html', {'form': form})
 
@@ -236,3 +236,7 @@ def chat_update(request, account_pk):
 @login_required
 def home(request):
     return render(request, 'frontend/home.html')
+
+x = 10
+name = "John"
+
