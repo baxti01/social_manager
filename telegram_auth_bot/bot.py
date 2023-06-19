@@ -7,9 +7,12 @@ from pyrogram import Client, idle
 from pyrogram.errors import ApiIdInvalid, ApiIdPublishedFlood, AccessTokenInvalid
 from pyromod import listen  # type: ignore
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+WORK_DIR = Path(__file__).resolve().parent
+BASE_DIR = WORK_DIR.parent
+
 env = environ.Env()
 env.read_env(env_file=os.path.join(BASE_DIR, ".env"))
+os.chdir(WORK_DIR)
 
 logging.basicConfig(
     level=logging.WARNING, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
