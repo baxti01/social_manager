@@ -1,9 +1,15 @@
 import logging
-from pyrogram import Client, idle
-from pyromod import listen  # type: ignore
-from pyrogram.errors import ApiIdInvalid, ApiIdPublishedFlood, AccessTokenInvalid
+import os
+from pathlib import Path
 
-from social_manager.settings import env
+import environ
+from pyrogram import Client, idle
+from pyrogram.errors import ApiIdInvalid, ApiIdPublishedFlood, AccessTokenInvalid
+from pyromod import listen  # type: ignore
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+env = environ.Env()
+env.read_env(env_file=os.path.join(BASE_DIR, ".env"))
 
 logging.basicConfig(
     level=logging.WARNING, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
@@ -17,7 +23,6 @@ app = Client(
     in_memory=True,
     plugins=dict(root="StringSessionBot"),
 )
-
 
 if __name__ == "__main__":
     print("Starting the bot")
