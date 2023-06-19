@@ -223,7 +223,7 @@ def chats(request):
 @login_required()
 def chat_update(request, account_pk):
     csrf_token = request.COOKIES.get("csrftoken")
-    response = requests.put(
+    requests.put(
         url=f"{API_URL}chats/",
         data={"account": account_pk},
         cookies=request.COOKIES,
@@ -233,10 +233,5 @@ def chat_update(request, account_pk):
     return redirect('chats')
 
 
-@login_required
 def home(request):
     return render(request, 'frontend/home.html')
-
-x = 10
-name = "John"
-

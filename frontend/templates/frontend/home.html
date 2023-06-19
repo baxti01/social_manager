@@ -1,18 +1,27 @@
 {% extends "frontend/base.html" %}
 {% load static %}
 {% block content %}
-    <div class="card text-center text-bg-dark   ">
+    <div class="row">
+    <div class="col-10 ms-4">
+        <div class="card text-center text-bg-dark   ">
         <div class="card-header">
-            Featured
+            О проекте
         </div>
-        <div class="card-body my-border-top">
+        <div class="card-body my-border-top p-0">
             <img src="{% static 'frontend/images/logo.png' %}" class="card-img post_image" alt="Image">
-{#            <img src="https://f.vividscreen.info/soft/c91aed22fc955513269e068a5771c21d/Tigers-Cub-1080x1920.jpg" class="card-img post_image" alt="Image">#}
-            <hr>
-            <p class="card-text">With #supporting text below as a natural lead-in to additional content.</p>
+            <p style="text-align: justify" class="card-text my-border-top p-1 ps-3 pe-3">
+                &emsp;Это сервис автоматизации публикации для социальных сетей.
+                Сервис написан на основе API и имеет пользовательский интерфейс в виде сайта. <br>
+                &emsp;Сервис написан на языке программирования Python с использованием
+                его фреймворков Django и Django Rest Framework. <br>
+                &emsp;Для использования сервиса нужно пройти регистрацию и подключить хотя бы одну из социальных сетей,
+                сейчас доступно подключение Telegram и Instagram.
+            </p>
         </div>
         <div class="card-footer text-body-secondary my-border-top">
-            <a href="#" class="btn btn-primary">Смотреть пост</a>
+            <a href="{% url 'posts' %}" class="btn btn-primary">Смотреть посты</a>
         </div>
+    </div>
+    </div>
     </div>
 {% endblock %}
