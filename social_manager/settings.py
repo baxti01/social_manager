@@ -50,20 +50,20 @@ INSTALLED_APPS = [
     "frontend.apps.FrontendConfig",
 ]
 
-SITE_PROTOCOL = 'https'
-API_VERSION = '16.0'
-SOCIAL_AUTH_FACEBOOK_KEY = env('SOCIAL_AUTH_FACEBOOK_KEY')
-SOCIAL_AUTH_FACEBOOK_SECRET = env('SOCIAL_AUTH_FACEBOOK_SECRET')
-SOCIAL_AUTH_FACEBOOK_SCOPE = [
-    'public_profile', 'email', 'instagram_basic',
-    'pages_show_list', 'instagram_basic', 'instagram_manage_comments',
-    'instagram_manage_insights', 'instagram_content_publish', 'instagram_manage_messages'
-]
-
-AUTHENTICATION_BACKENDS = [
-    'social_core.backends.facebook.FacebookOAuth2',
-    'django.contrib.auth.backends.ModelBackend',
-]
+# SITE_PROTOCOL = 'https'
+# API_VERSION = '16.0'
+# SOCIAL_AUTH_FACEBOOK_KEY = env('SOCIAL_AUTH_FACEBOOK_KEY')
+# SOCIAL_AUTH_FACEBOOK_SECRET = env('SOCIAL_AUTH_FACEBOOK_SECRET')
+# SOCIAL_AUTH_FACEBOOK_SCOPE = [
+#     'public_profile', 'email', 'instagram_basic',
+#     'pages_show_list', 'instagram_basic', 'instagram_manage_comments',
+#     'instagram_manage_insights', 'instagram_content_publish', 'instagram_manage_messages'
+# ]
+#
+# AUTHENTICATION_BACKENDS = [
+#     'social_core.backends.facebook.FacebookOAuth2',
+#     'django.contrib.auth.backends.ModelBackend',
+# ]
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
