@@ -1,4 +1,6 @@
 # Social manager
+## Видео демонстрация
+[![Видео демонстрация](https://img.youtube.com/vi/FYGOWTtVfhE/0.jpg)](https://www.youtube.com/watch?v=FYGOWTtVfhE)
 ### Описание проекта
 Это API с пользовательским интерфейсом для автоматизации
 публикации для социальных сетей. Сейчас доступно интеграция с

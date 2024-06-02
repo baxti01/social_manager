@@ -93,6 +93,7 @@ class UpdatePostForm(forms.Form):
         )
     )
 
+
 class CreatePostForm(UpdatePostForm):
     def __init__(self, *args, **kwargs):
         chats = kwargs.pop('chats')
@@ -108,7 +109,7 @@ class CreatePostForm(UpdatePostForm):
     )
 
     video = forms.FileField(
-        label='Фото',
+        label='Видео',
         required=False,
         widget=forms.ClearableFileInput(
             attrs={"class": "form-control"}
@@ -153,6 +154,7 @@ class CreateInstagramAccountForm(forms.Form):
             attrs={"class": "form-control"}
         )
     )
+
 
 class CreateTelegramAccountForm(forms.Form):
     token = forms.CharField(

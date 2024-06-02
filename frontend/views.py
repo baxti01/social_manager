@@ -1,7 +1,9 @@
 import requests
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.http import Http404
+from django.contrib.sessions.backends.db import SessionStore
+from django.core.handlers.wsgi import WSGIRequest
+from django.http import Http404, HttpResponse
 from django.shortcuts import render, redirect
 
 from frontend.forms import UserLoginForm, UserCreateForm, UpdatePostForm, CreatePostForm, CreateInstagramAccountForm, \
@@ -29,7 +31,6 @@ def sign_up(request):
 
 def login_view(request):
     form = UserLoginForm(request.POST or None)
-
     if form.is_valid():
         data = form.cleaned_data
         email = data.get('email')
@@ -48,13 +49,12 @@ def logout_view(request):
 
 
 @login_required()
-def posts(request):
+def posts(request: WSGIRequest):
     context = {"posts": [], "page": "posts"}
     response = requests.get(
         url=f"{API_URL}posts/",
         cookies=request.COOKIES
     )
-
     if response.status_code == 200:
         context['posts'] = response.json()
 

@@ -18,9 +18,7 @@ def get_upload_path(instance, filename):
 class AccountType(models.TextChoices):
     TIK_TOK = 'TikTok'
     INSTAGRAM = 'Instagram'
-    # FACEBOOK = 'Facebook'
     TELEGRAM = 'Telegram'
-    # VK = 'Vk'
 
 
 class Account(models.Model):
@@ -31,7 +29,6 @@ class Account(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-
 
     def __str__(self):
         return f'{self.name} {self.type}'

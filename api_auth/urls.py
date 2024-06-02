@@ -9,7 +9,6 @@ urlpatterns = [
     path('session/', include('rest_framework.urls')),
     path('jwt/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('jwt/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-
     # path("login/<str:backend>/", login_facebook, name='login'),
     # path("complete/<str:backend>/", complete_facebook, name="complete")
 ]
